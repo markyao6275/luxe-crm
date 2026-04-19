@@ -121,3 +121,47 @@ supabase db push         # apply to linked project
 
 > **Never edit a migration that has already been applied to a shared
 > environment** — write a follow-up migration instead.
+
+---
+
+## 5. Create users (admin-only for now)
+
+There is no self-signup. Admins provision users via the Supabase admin API or
+Studio. A trigger on `auth.users` creates the matching `profiles` row from the
+**User Metadata** (`raw_user_meta_data`) you provide.
+
+**Local:** open [http://127.0.0.1:54323](http://127.0.0.1:54323) → Authentication
+→ Users → **Add user**. Fill email + password, then paste one of the following
+into the *User Metadata* (raw) field:
+
+```json
+{ "role": "admin", "first_name": "Ops", "last_name": "Admin" }
+```
+
+```json
+{
+  "role": "brand_manager",
+  "brand_id": "<uuid of a brand>",
+  "first_name": "Ava",
+  "last_name": "Lee"
+}
+```
+
+```json
+{
+  "role": "sales_staff",
+  "brand_id": "<uuid of a brand>",
+  "first_name": "Sam",
+  "last_name": "Cruz"
+}
+```
+
+Required keys:
+
+- `role` — `admin` | `brand_manager` | `sales_staff`
+- `brand_id` — **required** unless `role` is `admin`; must match a row in `brands`
+
+If metadata is missing or invalid, user creation fails with the trigger's error
+message — fix the JSON and retry.
+
+To find brand UUIDs: Studio → Table Editor → `brands`.
