@@ -19,17 +19,14 @@ create table brands (
 );
 
 -- ---------------------------------------------------------------------------
--- stores  (each store belongs to a brand)
+-- stores  (flat global list; not scoped to a brand)
 -- ---------------------------------------------------------------------------
 create table stores (
   id         uuid primary key default gen_random_uuid(),
-  brand_id   uuid not null references brands(id) on delete restrict,
-  name       text not null,
+  name       text not null unique,
   address    text,
-  created_at timestamptz not null default now(),
-  unique (brand_id, name)
+  created_at timestamptz not null default now()
 );
-create index stores_brand_id_idx on stores (brand_id);
 
 -- ---------------------------------------------------------------------------
 -- profiles  (1:1 with auth.users; admin has no brand, others must)
@@ -83,23 +80,3 @@ create table contact_brands (
 );
 create index contact_brands_brand_id_idx on contact_brands (brand_id);
 create index contact_brands_store_id_idx on contact_brands (store_id);
-
--- A store_id, when provided, must belong to the same brand as the row.
-create or replace function contact_brands_validate_store()
-returns trigger
-language plpgsql
-as $$
-begin
-  if new.store_id is not null then
-    perform 1 from stores where id = new.store_id and brand_id = new.brand_id;
-    if not found then
-      raise exception 'store_id % does not belong to brand_id %', new.store_id, new.brand_id;
-    end if;
-  end if;
-  return new;
-end;
-$$;
-
-create trigger contact_brands_validate_store_trg
-before insert or update on contact_brands
-for each row execute function contact_brands_validate_store();

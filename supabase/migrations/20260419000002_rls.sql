@@ -53,12 +53,10 @@ create policy brands_admin_write on brands
   with check (auth_role() = 'admin');
 
 -- ---------------------------------------------------------------------------
--- stores: users see their brand's stores; admin all; admin writes
+-- stores: readable by any authenticated user; writable by admin
 -- ---------------------------------------------------------------------------
 create policy stores_select on stores
-  for select using (
-    auth_role() = 'admin' or brand_id = auth_brand_id()
-  );
+  for select using (auth.uid() is not null);
 
 create policy stores_admin_write on stores
   for all
