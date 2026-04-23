@@ -21,12 +21,14 @@ import { Textarea } from "@/components/ui/textarea";
 import type { ProfileRole } from "@/lib/auth/session";
 import { normalizeEmail, normalizePhone } from "@/lib/contacts";
 import {
-  type DedupMatch,
   type DedupStatus,
   blocksSubmit,
   dedupStatusFrom,
 } from "@/lib/contacts/dedup";
 import { createClient } from "@/lib/supabase/client";
+import type { Enums } from "@/lib/supabase/types";
+
+type GenderValue = "" | Enums<"gender">;
 
 type BrandOption = { id: string; name: string };
 type StoreOption = { id: string; name: string };
@@ -39,7 +41,7 @@ type Props = {
   stores: StoreOption[];
 };
 
-const GENDER_OPTIONS: { value: string; label: string }[] = [
+const GENDER_OPTIONS: { value: GenderValue; label: string }[] = [
   { value: "", label: "Select…" },
   { value: "male", label: "Male" },
   { value: "female", label: "Female" },
@@ -62,7 +64,7 @@ export function NewContactForm({
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [dob, setDob] = useState("");
-  const [gender, setGender] = useState("");
+  const [gender, setGender] = useState<GenderValue>("");
   const [city, setCity] = useState("");
   const [brandId, setBrandId] = useState<string>(
     userBrandId ?? brands[0]?.id ?? "",
@@ -98,7 +100,7 @@ export function NewContactForm({
         setDedupStatus({ kind: "idle" });
         return;
       }
-      const match = (data as DedupMatch[] | null)?.[0] ?? null;
+      const match = data?.[0] ?? null;
       setDedupStatus(dedupStatusFrom(match, activeBrandId || null));
     }, 400);
     return () => {
@@ -232,7 +234,7 @@ export function NewContactForm({
                 <SelectNative
                   id="gender"
                   value={gender}
-                  onChange={(e) => setGender(e.target.value)}
+                  onChange={(e) => setGender(e.target.value as GenderValue)}
                 >
                   {GENDER_OPTIONS.map((g) => (
                     <option key={g.value} value={g.value}>

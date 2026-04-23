@@ -12,26 +12,6 @@ import {
 } from "@/components/ui/card";
 import { createClient } from "@/lib/supabase/server";
 
-type ContactDetail = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  dob: string | null;
-  gender: string | null;
-  phone: string | null;
-  email: string | null;
-  city: string | null;
-  created_at: string;
-  contact_brands: {
-    brand_id: string;
-    notes: string | null;
-    store_id: string | null;
-    created_at: string;
-    brands: { id: string; name: string } | null;
-    stores: { id: string; name: string } | null;
-  }[];
-};
-
 const longDate = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -59,8 +39,7 @@ export default async function ContactDetailPage({
     `,
     )
     .eq("id", id)
-    .maybeSingle()
-    .returns<ContactDetail | null>();
+    .maybeSingle();
 
   if (error || !data) {
     notFound();
