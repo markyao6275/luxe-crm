@@ -121,3 +121,56 @@ supabase db push         # apply to linked project
 
 > **Never edit a migration that has already been applied to a shared
 > environment** — write a follow-up migration instead.
+
+---
+
+## 5. Create users (admin-only for now)
+
+There is no self-signup. Admins provision users via the Supabase admin API or
+Studio. A trigger on `auth.users` creates the matching `profiles` row
+automatically, reading optional fields from **User Metadata**
+(`raw_user_meta_data`).
+
+**Local:** open [http://127.0.0.1:54323](http://127.0.0.1:54323) → Authentication
+→ Users → **Add user**. Fill email + password. User Metadata is optional.
+
+### Metadata fields (all optional)
+
+| Key          | Default        | Notes                                               |
+|--------------|----------------|-----------------------------------------------------|
+| `role`       | `sales_staff`  | `admin` \| `brand_manager` \| `sales_staff`         |
+| `brand_id`   | `null`         | UUID of a row in `brands`. Admin must leave unset.  |
+| `store_id`   | `null`         | UUID of a row in `stores`. Admin must leave unset.  |
+| `first_name` | `null`         |                                                     |
+| `last_name`  | `null`         |                                                     |
+
+### Examples
+
+Minimum — no metadata:
+
+```json
+{}
+```
+
+This creates a profile with `role = sales_staff`, `brand_id = null`. The user
+can sign in but RLS will show them nothing until an admin assigns their brand.
+
+A fully-specified sales-staff user:
+
+```json
+{
+  "role": "sales_staff",
+  "brand_id": "<brand uuid>",
+  "store_id": "<store uuid>",
+  "first_name": "Sam",
+  "last_name": "Cruz"
+}
+```
+
+An admin (brand/store must be unset):
+
+```json
+{ "role": "admin", "first_name": "Ops", "last_name": "Admin" }
+```
+
+To find UUIDs: Studio → Table Editor → `brands` / `stores`.
