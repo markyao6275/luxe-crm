@@ -15,21 +15,6 @@ import { EmptyState } from "@/components/empty-state";
 import { getProfile } from "@/lib/auth/session";
 import { createClient } from "@/lib/supabase/server";
 
-type ContactRow = {
-  id: string;
-  first_name: string;
-  last_name: string;
-  phone: string | null;
-  email: string | null;
-  city: string | null;
-  created_at: string;
-  contact_brands: {
-    brand_id: string;
-    notes: string | null;
-    brands: { id: string; name: string } | null;
-  }[];
-};
-
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   month: "short",
   day: "numeric",
@@ -60,8 +45,7 @@ export default async function ContactsPage() {
     `,
     )
     .order("created_at", { ascending: false })
-    .limit(100)
-    .returns<ContactRow[]>();
+    .limit(100);
 
   if (error) {
     return (
